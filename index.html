@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UFD Buddy | Banner preview</title>
+  <style>
+    @font-face { font-family: Roboto; font-style: normal; font-weight: 400; src: url('assets/roboto-400.woff2') format('woff2'); }
+    @font-face { font-family: Roboto; font-style: normal; font-weight: 500; src: url('assets/roboto-500.woff2') format('woff2'); }
+    @font-face { font-family: Roboto; font-style: normal; font-weight: 700; src: url('assets/roboto-700.woff2') format('woff2'); }
+    :root { color-scheme: light; --ink: #212121; --muted: #616161; --line: #dedede; --accent: #216951; --interactive: #5b5fc7; }
+    * { box-sizing: border-box; letter-spacing: 0; }
+    body { margin: 0; color: var(--ink); background: #fafafa; font-family: Roboto, sans-serif; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .6; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    header { border-bottom: 1px solid var(--line); padding: 24px 32px; display: flex; align-items: center; gap: 16px; background: white; }
+    header strong { font-size: 20px; font-weight: 700; }
+    header span { color: var(--muted); border-left: 1px solid var(--line); padding-left: 16px; font-size: 14px; }
+    main { max-width: 1000px; margin: auto; padding: 24px 32px; display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 1fr); gap: 40px; align-items: start; }
+    h1 { font-size: 24px; margin: 0 0 28px; }
+    h2 { font-size: 16px; margin: 0; }
+    form { display: flex; flex-direction: column; gap: 24px; }
+    label { display: block; font-size: 14px; font-weight: 500; }
+    input[type="text"], textarea { display: block; width: 100%; margin-top: 8px; padding: 12px; background: white; border: 1px solid #b5b5b5; border-radius: 4px; color: var(--ink); }
+    textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+    .toggle { display: flex; align-items: center; gap: 10px; min-height: 32px; }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    .form-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .command { border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); padding: 10px 16px; min-height: 44px; }
+    .primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .preview-heading span { font-size: 12px; color: var(--muted); }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .preview-viewport { width: calc(426px * var(--preview-scale, .8)); height: calc(926px * var(--preview-scale, .8)); }
+    .export-frame { padding: 12px; width: 426px; background: #fff; transform: scale(var(--preview-scale, .8)); transform-origin: top left; }
+    .meeting-scene { width: 402px; height: 874px; overflow: hidden; position: relative; background: #000; color: #e1e1e1; font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif; }
+    .meeting-background { position: absolute; inset: 0; }
+    .phone-status { height: 54px; display: flex; align-items: center; justify-content: space-between; padding-left: 47px; font-size: 16px; font-weight: 600; }
+    .phone-status img { width: 131px; height: 12px; }
+    .meeting-header { height: 56px; display: flex; align-items: center; padding: 4px; }
+    .header-icon { width: 48px; height: 48px; display: grid; place-items: center; flex-shrink: 0; }
+    .header-icon img { width: 24px; height: 24px; }
+    .header-icon .meeting-alert { width: 28px; height: 28px; }
+    .header-icon .copilot-icon { width: 26px; height: 24px; }
+    .meeting-name { flex: 1; min-width: 0; font-size: 17px; line-height: 22px; white-space: nowrap; }
+    .meeting-signals { display: flex; gap: 4px; align-items: center; font-size: 12px; line-height: 16px; margin-top: 4px; }
+    .meeting-signals img { width: 16px; height: 16px; }
+    .agenda { height: 52px; padding: 8px; display: flex; align-items: flex-end; }
+    .agenda-track { width: 100%; height: 36px; border-radius: 999px; background: #292929; display: flex; gap: 2px; padding: 8px; }
+    .agenda-track span { background: #616161; border-radius: 100px; flex: 1; }
+    .agenda-track span:first-child { flex: 0 0 106px; background: #9291ff; }
+    .agenda-track span:nth-child(2) { flex: 0 0 56px; background: linear-gradient(to right, #9291ff 45%, #616161 45%); }
+    .agenda-track span:nth-child(3) { flex: 0 0 19px; }
+    .shared-content { height: 224px; position: relative; overflow: hidden; border: 1px solid #484848; border-radius: 4px; }
+    .shared-content > img { width: 100%; height: 100%; object-fit: cover; }
+    .name-tag { position: absolute; bottom: 8px; left: 8px; height: 28px; padding: 4px; border-radius: 3px; background: #292929e8; color: #e1e1e1; display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; }
+    .name-tag img { width: 20px; height: 20px; }
+    .slide-controls { height: 48px; background: #292929; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; padding: 8px; gap: 8px; font-size: 12px; }
+    .slide-controls img { width: 24px; height: 24px; }
+    .slide-controls .slide-action { font-size: 13px; line-height: 18px; padding: 4px 8px; border: 1px solid #49486e; color: #9291ff; border-radius: 4px; }
+    .slide-controls .selected { background: #9291ff; color: #000; }
+    .gallery { position: absolute; top: 454px; bottom: 104px; width: 100%; overflow: hidden; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 173.25px; }
+    .participant { position: relative; overflow: hidden; border: 1px solid #484848; border-radius: 4px; background: #1a1a1a; }
+    .participant > img { width: 100%; height: 100%; object-fit: cover; }
+    .participant.initials { display: grid; place-items: center; }
+    .participant.initials > img { width: 104px; height: 104px; border-radius: 50%; }
+    .participant.speaking { border: 3px solid #9291ff; }
+    .self-view { position: absolute; right: 10px; bottom: 184px; width: 76px; height: 136px; border: 1px solid #616161; border-radius: 4px; overflow: hidden; }
+    .self-view > img { width: 100%; height: 100%; object-fit: cover; }
+    .self-view .self-mic { position: absolute; bottom: 4px; left: 4px; width: 20px; height: 20px; }
+    .call-bar { position: absolute; bottom: 0; width: 100%; height: 104px; background: #141414; border-top: 1px solid #484848; }
+    .call-tools { height: 80px; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; }
+    .call-tool { width: 48px; height: 48px; display: grid; place-items: center; }
+    .call-tool img { width: 28px; height: 28px; }
+    .call-tool.end-call { width: 60px; display: flex; gap: 4px; padding: 10px; background: #8d2337; border-radius: 8px; }
+    .call-tool .end-chevron { width: 12px; height: 12px; }
+    .home-indicator { height: 5px; width: 140px; background: #e1e1e1; border-radius: 100px; margin: 11px auto 0; }
+    .banner-slot { position: absolute; top: 118px; left: 21px; height: 72px; z-index: 1; }
+    .banner { height: 72px; width: 360px; max-width: 100%; padding: 16px; border-radius: 12px; background: rgba(41,41,41,.97); color: #e1e1e1; box-shadow: 0 4px 8px #0000003d, 0 0 2px #0000001f; display: flex; align-items: center; gap: 4px; }
+    .banner-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
+    .banner-icon { width: 24px; height: 24px; flex: 0 0 24px; }
+    .banner-copy { min-width: 0; flex: 1; }
+    .banner-title { font-size: 15px; font-weight: 700; line-height: 24px; }
+    .banner-body { font-size: 12px; line-height: 16px; }
+    .banner-title, .banner-body { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
+    .banner-action { border: 0; background: transparent; color: #a6a7ff; font-size: 13px; font-weight: 500; line-height: 18px; height: 28px; padding: 0 8px; max-width: 88px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .banner-dismiss { width: 20px; height: 40px; display: grid; place-items: center; padding: 0; flex: 0 0 20px; background: none; border: 0; }
+    .banner-dismiss img { width: 20px; height: 20px; }
+    [hidden] { display: none !important; }
+    .export-label { font-size: 10px; line-height: 16px; color: #616161; margin: 12px 0 0; }
+    .status { color: var(--muted); font-size: 13px; line-height: 1.5; min-height: 40px; margin: 16px 0 0; }
+    @media (max-width: 740px) {
+      header { padding: 20px; flex-wrap: wrap; }
+      main { padding: 24px 20px; grid-template-columns: minmax(0, 1fr); gap: 32px; }
+      .preview { grid-row: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header><strong>UFD Buddy</strong><span>Banner preview</span></header>
+  <main>
+    <section aria-labelledby="content-heading">
+      <h1 id="content-heading">Notification content</h1>
+      <form id="editor">
+        <label>Title (15 characters max)<input id="heading" type="text" maxlength="15" value="Lobby waiting"></label>
+        <label>Message<textarea id="message" maxlength="500">Review the lobby to admit participants.</textarea></label>
+        <label class="toggle"><input id="show-action" type="checkbox" checked>Action button</label>
+        <label id="action-field">Action label<input id="action-label" type="text" maxlength="60" value="View lobby"></label>
+        <label class="toggle"><input id="show-dismiss" type="checkbox" checked>Dismiss button</label>
+        <div class="form-actions">
+          <button id="download" class="command primary" type="button">Download PNG</button>
+          <button id="reset-button" class="command" type="button">Reset</button>
+        </div>
+      </form>
+    </section>
+    <section class="preview" aria-labelledby="preview-heading">
+      <div class="preview-heading"><h2 id="preview-heading">Illustrative preview</h2><span>In meeting</span></div>
+      <div class="workspace">
+        <div class="preview-viewport" id="preview-viewport">
+        <div class="export-frame" id="export-frame">
+          <div class="meeting-scene" id="meeting-scene">
+            <div class="meeting-background" role="img" aria-label="Reference mobile meeting with shared slides, participant gallery, and call controls">
+              <div class="phone-status" aria-hidden="true"><span>9:30</span><img src="assets/status-dark.svg" alt=""></div>
+              <div class="meeting-header" aria-hidden="true">
+                <span class="header-icon"><img src="assets/back-dark.svg" alt=""></span>
+                <div class="meeting-name">Meeting name goes here<div class="meeting-signals"><img src="assets/recording.svg" alt=""><img src="assets/shield-dark.svg" alt=""><span>10:20</span></div></div>
+                <span class="header-icon"><img class="meeting-alert" src="assets/alert-dark.svg" alt=""></span>
+                <span class="header-icon"><img class="copilot-icon" src="assets/copilot.svg" alt=""></span>
+              </div>
+              <div class="agenda" aria-hidden="true"><div class="agenda-track"><span></span><span></span><span></span><span></span></div></div>
+              <div class="shared-content" aria-hidden="true"><img src="assets/shared-content.png" alt=""><span class="name-tag">Adrian A</span></div>
+              <div class="slide-controls" aria-hidden="true"><img src="assets/slide-back.svg" alt=""><span>1 of 20</span><span class="slide-action selected">To presenter</span><span class="slide-action">Take control</span><img src="assets/slide-next.svg" alt=""></div>
+              <div class="gallery" aria-hidden="true">
+                <div class="participant initials"><img src="assets/adrian.png" alt=""><span class="name-tag">Adrian A<img src="assets/tile-muted.svg" alt=""><img src="assets/video-person.svg" alt=""></span></div>
+                <div class="participant"><img src="assets/aadi.png" alt=""><span class="name-tag">Aadi K<img src="assets/tile-muted.svg" alt=""></span></div>
+                <div class="participant speaking"><img src="assets/aaron.png" alt=""><span class="name-tag">Aaron B<img src="assets/tile-mic.svg" alt=""></span></div>
+                <div class="participant"><img src="assets/allan.png" alt=""><span class="name-tag">Allan M<img src="assets/tile-muted.svg" alt=""></span></div>
+              </div>
+              <div class="self-view" aria-hidden="true"><img src="assets/self-view.png" alt=""><img class="self-mic" src="assets/self-muted.svg" alt=""></div>
+              <div class="call-bar" aria-hidden="true"><div class="call-tools">
+                <span class="call-tool"><img src="assets/video-dark.svg" alt=""></span><span class="call-tool"><img src="assets/mute-dark.svg" alt=""></span><span class="call-tool"><img src="assets/audio-dark.svg" alt=""></span><span class="call-tool"><img src="assets/chat-dark.svg" alt=""></span><span class="call-tool"><img src="assets/more-dark.svg" alt=""></span><span class="call-tool end-call"><img src="assets/call-end.svg" alt=""><img class="end-chevron" src="assets/end-chevron.svg" alt=""></span>
+              </div><div class="home-indicator"></div></div>
+            </div>
+          <div class="banner-slot">
+            <div class="banner" id="banner" aria-label="Notification preview">
+              <div class="banner-left">
+                <img class="banner-icon" src="assets/notification-dark.svg" alt="">
+                <div class="banner-copy">
+                  <p class="banner-title" id="banner-title"></p>
+                  <p class="banner-body" id="banner-body"></p>
+                </div>
+              </div>
+              <button class="banner-action" id="banner-action" type="button"></button>
+              <button class="banner-dismiss" id="banner-dismiss" type="button" aria-label="Dismiss preview" title="Dismiss preview"><img src="assets/dismiss-dark.svg" alt=""></button>
+            </div>
+          </div>
+          </div>
+          <p class="export-label">Illustrative preview - not a treatment recommendation</p>
+        </div>
+        </div>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <button id="restore" type="button" class="command" hidden>Restore banner</button>
+    </section>
+  </main>
+  <script src="assets/html-to-image.js"></script>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const editor = byId('editor');
+    const banner = byId('banner');
+    const status = byId('status');
+    const download = byId('download');
+
+    function updatePreview() {
+      byId('banner-title').textContent = byId('heading').value;
+      byId('banner-body').textContent = byId('message').value;
+      byId('banner-title').title = byId('heading').value;
+      byId('banner-body').title = byId('message').value;
+      byId('banner-action').textContent = byId('action-label').value;
+      byId('banner-action').title = byId('action-label').value;
+      byId('banner-action').hidden = !byId('show-action').checked || !byId('action-label').value.trim();
+      byId('action-field').hidden = !byId('show-action').checked;
+      byId('banner-dismiss').hidden = !byId('show-dismiss').checked;
+      banner.hidden = false;
+      byId('restore').hidden = true;
+      download.disabled = !byId('heading').value.trim() && !byId('message').value.trim();
+      requestAnimationFrame(updateOverflow);
+    }
+
+    function updateOverflow() {
+      if (banner.hidden) return;
+      const clipped = ['banner-title', 'banner-body', 'banner-action'].some((id) => {
+        const element = byId(id);
+        return !element.hidden && element.scrollWidth > element.clientWidth;
+      });
+      status.textContent = clipped ? 'Some text is truncated in the single-banner layout.' : '';
+    }
+
+    editor.addEventListener('submit', (event) => event.preventDefault());
+    editor.addEventListener('input', updatePreview);
+    byId('reset-button').addEventListener('click', () => { editor.reset(); updatePreview(); });
+    byId('restore').addEventListener('click', updatePreview);
+    byId('banner-dismiss').addEventListener('click', () => {
+      banner.hidden = true;
+      byId('restore').hidden = false;
+      download.disabled = true;
+      status.textContent = 'Preview dismissed.';
+    });
+    byId('banner-action').addEventListener('click', () => {
+      status.textContent = 'Preview action selected. No meeting action was performed.';
+    });
+    download.addEventListener('click', async () => {
+      download.disabled = true;
+      download.textContent = 'Exporting...';
+      try {
+        await document.fonts.ready;
+        await Promise.all([...byId('export-frame').querySelectorAll('img')].map((image) => image.decode()));
+        const blob = await htmlToImage.toBlob(byId('export-frame'), {
+          pixelRatio: 2, backgroundColor: '#ffffff', width: 426, height: 926,
+          style: { width: '426px', maxWidth: 'none', transform: 'none' }
+        });
+        if (!blob) throw new Error('Empty image');
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'ufd-banner-preview.png';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        status.textContent = 'PNG download prepared.';
+      } catch {
+        status.textContent = 'Could not export the PNG. Check that local assets and fonts loaded, then retry.';
+      } finally {
+        download.disabled = banner.hidden || (!byId('heading').value.trim() && !byId('message').value.trim());
+        download.textContent = 'Download PNG';
+      }
+    });
+    new ResizeObserver((entries) => {
+      byId('preview-viewport').style.setProperty('--preview-scale', Math.min(.8, entries[0].contentRect.width / 426));
+    }).observe(document.querySelector('.workspace'));
+    window.addEventListener('resize', () => requestAnimationFrame(updateOverflow));
+    document.fonts.ready.then(updatePreview);
+    updatePreview();
+  </script>
+</body>
+</html>
