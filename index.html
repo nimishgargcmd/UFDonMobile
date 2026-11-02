@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>UFD Buddy | Banner preview</title>
+  <title>UFD Buddy | Notification preview</title>
   <style>
     @font-face { font-family: Roboto; font-style: normal; font-weight: 400; src: url('assets/roboto-400.woff2') format('woff2'); }
     @font-face { font-family: Roboto; font-style: normal; font-weight: 500; src: url('assets/roboto-500.woff2') format('woff2'); }
@@ -79,15 +79,31 @@
     .home-indicator { height: 5px; width: 140px; background: #e1e1e1; border-radius: 100px; margin: 11px auto 0; }
     .banner-slot { position: absolute; top: 118px; left: 21px; height: 72px; z-index: 1; }
     .banner { height: 72px; width: 360px; max-width: 100%; padding: 16px; border-radius: 12px; background: rgba(41,41,41,.97); color: #e1e1e1; box-shadow: 0 4px 8px #0000003d, 0 0 2px #0000001f; display: flex; align-items: center; gap: 4px; }
-    .banner-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
+    .banner-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; overflow: hidden; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; font: inherit; }
     .banner-icon { width: 24px; height: 24px; flex: 0 0 24px; }
     .banner-copy { min-width: 0; flex: 1; }
     .banner-title { font-size: 15px; font-weight: 700; line-height: 24px; }
     .banner-body { font-size: 12px; line-height: 16px; }
-    .banner-title, .banner-body { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
+    .banner-title, .banner-body { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; }
     .banner-action { border: 0; background: transparent; color: #a6a7ff; font-size: 13px; font-weight: 500; line-height: 18px; height: 28px; padding: 0 8px; max-width: 88px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .banner-dismiss { width: 20px; height: 40px; display: grid; place-items: center; padding: 0; flex: 0 0 20px; background: none; border: 0; }
     .banner-dismiss img { width: 20px; height: 20px; }
+    .banner.expanded { height: auto; min-height: 120px; display: grid; grid-template-columns: minmax(0, 1fr) 20px; gap: 12px 8px; }
+    .banner.expanded .banner-left { grid-column: 1; grid-row: 1; align-items: flex-start; }
+    .banner.expanded .banner-icon { margin-top: 24px; }
+    .banner.expanded .banner-body { white-space: normal; overflow-wrap: anywhere; font-size: 13px; line-height: 18px; margin-top: 4px; }
+    .banner.expanded .banner-dismiss { grid-column: 2; grid-row: 1; align-self: start; }
+    .banner.expanded .banner-action { grid-column: 1; grid-row: 2; margin-left: 36px; max-width: none; height: auto; min-height: 32px; padding: 6px 12px; border-radius: 4px; background: #9291ff; color: #000; white-space: normal; overflow-wrap: anywhere; }
+    .mode-picker { display: flex; gap: 4px; padding: 4px; margin: 0; border: 1px solid var(--line); border-radius: 4px; }
+    .mode-picker legend { font-size: 14px; font-weight: 500; padding: 0 4px; }
+    .mode-picker label { flex: 1; position: relative; }
+    .mode-picker input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .mode-picker span { display: block; padding: 10px 16px; text-align: center; border-radius: 3px; cursor: pointer; }
+    .mode-picker input:checked + span { background: var(--accent); color: white; }
+    .mode-picker input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+    .toast { position: absolute; bottom: 114px; left: 21px; width: 360px; height: 60px; padding: 16px; display: flex; align-items: center; gap: 12px; background: #292929; color: #e1e1e1; border-radius: 8px; box-shadow: 0 4px 8px #0000003d; }
+    .toast-icon { width: 20px; height: 20px; flex: 0 0 20px; }
+    .toast-message { flex: 1; min-width: 0; margin: 0; font-size: 15px; line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     [hidden] { display: none !important; }
     .export-label { font-size: 10px; line-height: 16px; color: #616161; margin: 12px 0 0; }
     .status { color: var(--muted); font-size: 13px; line-height: 1.5; min-height: 40px; margin: 16px 0 0; }
@@ -99,16 +115,21 @@
   </style>
 </head>
 <body>
-  <header><strong>UFD Buddy</strong><span>Banner preview</span></header>
+  <header><strong>UFD Buddy</strong><span>Notification preview</span></header>
   <main>
     <section aria-labelledby="content-heading">
       <h1 id="content-heading">Notification content</h1>
       <form id="editor">
-        <label>Title (15 characters max)<input id="heading" type="text" maxlength="15" value="Lobby waiting"></label>
+        <fieldset class="mode-picker"><legend>Notification type</legend>
+          <label><input type="radio" name="preview-mode" value="banner" checked><span>Banner</span></label>
+          <label><input type="radio" name="preview-mode" value="toast"><span>Toast</span></label>
+        </fieldset>
+        <label id="heading-field">Title (15 characters max)<input id="heading" type="text" maxlength="15" value="Lobby waiting"></label>
         <label>Message<textarea id="message" maxlength="500">Review the lobby to admit participants.</textarea></label>
         <label class="toggle"><input id="show-action" type="checkbox" checked>Action button</label>
         <label id="action-field">Action label<input id="action-label" type="text" maxlength="60" value="View lobby"></label>
         <label class="toggle"><input id="show-dismiss" type="checkbox" checked>Dismiss button</label>
+        <label class="toggle" id="expanded-field"><input id="expanded" type="checkbox">Expanded banner</label>
         <div class="form-actions">
           <button id="download" class="command primary" type="button">Download PNG</button>
           <button id="reset-button" class="command" type="button">Reset</button>
@@ -145,16 +166,22 @@
             </div>
           <div class="banner-slot">
             <div class="banner" id="banner" aria-label="Notification preview">
-              <div class="banner-left">
+              <button class="banner-left" id="banner-toggle" type="button" aria-expanded="false" aria-controls="banner-copy" aria-label="Expand notification" title="Expand notification">
                 <img class="banner-icon" src="assets/notification-dark.svg" alt="">
-                <div class="banner-copy">
-                  <p class="banner-title" id="banner-title"></p>
-                  <p class="banner-body" id="banner-body"></p>
-                </div>
-              </div>
+                <span class="banner-copy" id="banner-copy">
+                  <span class="banner-title" id="banner-title"></span>
+                  <span class="banner-body" id="banner-body"></span>
+                </span>
+              </button>
               <button class="banner-action" id="banner-action" type="button"></button>
               <button class="banner-dismiss" id="banner-dismiss" type="button" aria-label="Dismiss preview" title="Dismiss preview"><img src="assets/dismiss-dark.svg" alt=""></button>
             </div>
+          </div>
+          <div class="toast" id="toast" aria-label="Toast preview" hidden>
+            <img class="toast-icon" src="assets/notification-dark.svg" alt="">
+            <p class="toast-message" id="toast-message"></p>
+            <button class="banner-action" id="toast-action" type="button"></button>
+            <button class="banner-dismiss" id="toast-dismiss" type="button" aria-label="Dismiss toast" title="Dismiss toast"><img src="assets/dismiss-dark.svg" alt=""></button>
           </div>
           </div>
           <p class="export-label">Illustrative preview - not a treatment recommendation</p>
@@ -172,8 +199,47 @@
     const banner = byId('banner');
     const status = byId('status');
     const download = byId('download');
+    let previewMode = 'banner';
+    const fieldIds = ['heading', 'message', 'action-label', 'show-action', 'show-dismiss', 'expanded'];
+    const defaults = {
+      banner: readFields(),
+      toast: { heading: '', message: 'Link copied', 'action-label': '', 'show-action': false, 'show-dismiss': true, expanded: false }
+    };
+    const drafts = structuredClone(defaults);
+
+    function readFields() {
+      return Object.fromEntries(fieldIds.map(id => [id, byId(id).type === 'checkbox' ? byId(id).checked : byId(id).value]));
+    }
+
+    function writeFields(values) {
+      fieldIds.forEach(id => { byId(id)[byId(id).type === 'checkbox' ? 'checked' : 'value'] = values[id]; });
+    }
+
+    function activePreview() {
+      return previewMode === 'toast' ? byId('toast') : banner;
+    }
+
+    function hasContent() {
+      return Boolean(byId('message').value.trim() || (previewMode === 'banner' && byId('heading').value.trim()));
+    }
 
     function updatePreview() {
+      const isToast = previewMode === 'toast';
+      byId('heading-field').hidden = isToast;
+      byId('expanded-field').hidden = isToast;
+      byId('toast-message').textContent = byId('message').value;
+      byId('toast-message').title = byId('message').value;
+      byId('toast-action').textContent = byId('action-label').value;
+      byId('toast-action').title = byId('action-label').value;
+      byId('toast-action').hidden = !byId('show-action').checked || !byId('action-label').value.trim();
+      byId('toast-dismiss').hidden = !byId('show-dismiss').checked;
+      byId('toast').hidden = !isToast;
+      byId('restore').textContent = isToast ? 'Restore toast' : 'Restore banner';
+      const expanded = byId('expanded').checked;
+      banner.classList.toggle('expanded', expanded);
+      byId('banner-toggle').setAttribute('aria-expanded', String(expanded));
+      byId('banner-toggle').setAttribute('aria-label', expanded ? 'Collapse notification' : 'Expand notification');
+      byId('banner-toggle').title = expanded ? 'Collapse notification' : 'Expand notification';
       byId('banner-title').textContent = byId('heading').value;
       byId('banner-body').textContent = byId('message').value;
       byId('banner-title').title = byId('heading').value;
@@ -183,34 +249,46 @@
       byId('banner-action').hidden = !byId('show-action').checked || !byId('action-label').value.trim();
       byId('action-field').hidden = !byId('show-action').checked;
       byId('banner-dismiss').hidden = !byId('show-dismiss').checked;
-      banner.hidden = false;
+      banner.hidden = isToast;
       byId('restore').hidden = true;
-      download.disabled = !byId('heading').value.trim() && !byId('message').value.trim();
+      download.disabled = !hasContent();
       requestAnimationFrame(updateOverflow);
     }
 
     function updateOverflow() {
-      if (banner.hidden) return;
-      const clipped = ['banner-title', 'banner-body', 'banner-action'].some((id) => {
+      if (activePreview().hidden) return;
+      const fields = previewMode === 'toast' ? ['toast-message', 'toast-action'] : ['banner-title', 'banner-body', 'banner-action'];
+      const clipped = fields.some((id) => {
         const element = byId(id);
         return !element.hidden && element.scrollWidth > element.clientWidth;
       });
-      status.textContent = clipped ? 'Some text is truncated in the single-banner layout.' : '';
+      status.textContent = clipped ? `Some text is truncated in the ${previewMode} layout.` : '';
     }
 
     editor.addEventListener('submit', (event) => event.preventDefault());
-    editor.addEventListener('input', updatePreview);
-    byId('reset-button').addEventListener('click', () => { editor.reset(); updatePreview(); });
+    editor.addEventListener('input', (event) => {
+      if (event.target.name === 'preview-mode') {
+        drafts[previewMode] = readFields();
+        previewMode = event.target.value;
+        writeFields(drafts[previewMode]);
+      }
+      updatePreview();
+    });
+    byId('banner-toggle').addEventListener('click', () => {
+      byId('expanded').checked = !byId('expanded').checked;
+      updatePreview();
+    });
+    byId('reset-button').addEventListener('click', () => { writeFields(defaults[previewMode]); updatePreview(); });
     byId('restore').addEventListener('click', updatePreview);
-    byId('banner-dismiss').addEventListener('click', () => {
-      banner.hidden = true;
+    ['banner-dismiss', 'toast-dismiss'].forEach(id => byId(id).addEventListener('click', () => {
+      activePreview().hidden = true;
       byId('restore').hidden = false;
       download.disabled = true;
       status.textContent = 'Preview dismissed.';
-    });
-    byId('banner-action').addEventListener('click', () => {
+    }));
+    ['banner-action', 'toast-action'].forEach(id => byId(id).addEventListener('click', () => {
       status.textContent = 'Preview action selected. No meeting action was performed.';
-    });
+    }));
     download.addEventListener('click', async () => {
       download.disabled = true;
       download.textContent = 'Exporting...';
@@ -225,14 +303,14 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'ufd-banner-preview.png';
+        link.download = `ufd-${previewMode}-preview.png`;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 30000);
         status.textContent = 'PNG download prepared.';
       } catch {
         status.textContent = 'Could not export the PNG. Check that local assets and fonts loaded, then retry.';
       } finally {
-        download.disabled = banner.hidden || (!byId('heading').value.trim() && !byId('message').value.trim());
+        download.disabled = activePreview().hidden || !hasContent();
         download.textContent = 'Download PNG';
       }
     });
